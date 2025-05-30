@@ -33,7 +33,7 @@ interface general {
         not-enabled,
 	
 	/// Gets returned when a function on an invalidated resource gets called 
-	resource-invalidated
+	resource-invalidated,
 
         /// Unspecified error, error message might give hints but not guaranteed
         other(string)

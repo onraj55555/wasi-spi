@@ -85,7 +85,7 @@ interface controller {
     /// An SPI controller is a combination of an SPI bus together with a CS pin, multiple controllers on the same bus can exist
     resource spi-controller {
         /// Constructor function to get an spi-controller resource
-        get: static func(bus: u8, cs-pin: string, config: spi-config) -> result<spi-controller, spi-error>;
+        get: static func(bus: string, cs-pin: string, config: spi-config) -> result<spi-controller, spi-error>;
 
         /// Returns the configuration of the SPI bus + CS pin this resource is tied to
         get-config: func() -> spi-config;
@@ -135,7 +135,7 @@ interface bus {
     /// To talk to peripheral devices, their CS pins will need to be activated manually by means of for example wasi:gpio digital-out-pin resources
     resource spi-bus {
         /// Constructor function to get an spi-bus resource
-        get: static func(bus: u8, config: spi-config) -> result<spi-bus, spi-error>;
+        get: static func(bus: string, config: spi-config) -> result<spi-bus, spi-error>;
 
         /// Returns the configuration of the SPI bus + CS pin this resource is tied to
         get-config: func() -> spi-config;

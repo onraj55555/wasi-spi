@@ -31,6 +31,9 @@ interface general {
 
         /// The peripheral itself is not enabled so cannot use 
         not-enabled,
+	
+	/// Gets returned when a function on an invalidated resource gets called 
+	resource-invalidated
 
         /// Unspecified error, error message might give hints but not guaranteed
         other(string)

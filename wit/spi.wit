@@ -91,7 +91,7 @@ interface controller {
         get: static func(bus: string, cs-pin: string, config: spi-config) -> result<spi-controller, spi-error>;
 
         /// Returns the configuration of the SPI bus + CS pin this resource is tied to
-        get-config: func() -> spi-config;
+        get-config: func() -> result<spi-config, spi-error>;
 
         // Maybe change this to string because some microcontrollers use other names than SPI0, SPI1, ...
         // Examples are NXP i.MX RT Series, ESP32
@@ -140,8 +140,8 @@ interface bus {
         /// Constructor function to get an spi-bus resource
         get: static func(bus: string, config: spi-config) -> result<spi-bus, spi-error>;
 
-        /// Returns the configuration of the SPI bus + CS pin this resource is tied to
-        get-config: func() -> spi-config;
+        /// Returns the configuration of the SPI bus this resource is tied to
+        get-config: func() -> result<spi-config, spi-error>;
 
         /// Returns the bus number
         get-bus: func() -> u8;
@@ -177,6 +177,9 @@ interface peripheral {
     resource spi-peripheral {
         /// Constructor function to be come an SPI peripheral
         become: static func(bus: string, config: spi-config) -> result<spi-peripheral, spi-error>;
+
+	/// Returns the configuration of the spi peripheral
+        get-config: func() -> result<spi-config, spi-error>;
 
         /// Checks if the peripheral is selected, after this function returns true, the read function 
         enabled: func() -> bool;

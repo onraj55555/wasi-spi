@@ -173,7 +173,7 @@ interface peripheral {
     /// An SPI peripheral is a device that reacts to its CS becoming active and responds to incoming bits by sending back bits to the controller device
     resource spi-peripheral {
         /// Constructor function to be come an SPI peripheral
-        become: static func(bus: u8, config: spi-config) -> result<spi-peripheral, spi-error>;
+        become: static func(bus: string, config: spi-config) -> result<spi-peripheral, spi-error>;
 
         /// Checks if the peripheral is selected, after this function returns true, the read function 
         enabled: func() -> bool;

@@ -93,17 +93,13 @@ interface controller {
         /// Returns the configuration of the SPI bus + CS pin this resource is tied to
         get-config: func() -> result<spi-config, spi-error>;
 
-        // Maybe change this to string because some microcontrollers use other names than SPI0, SPI1, ...
-        // Examples are NXP i.MX RT Series, ESP32
-        // A function that maps the SPI label to a number can be made to help with this problem
-
         /// Returns the bus number
-        get-bus: func() -> u8;
+        get-bus: func() -> result<string, spi-error>;
 
         // Maybe depend on wasi:gpio and give a digital-in-pin as argument to the constructor
 
         /// Returns the CS pin label
-        get-cs-pin: func() -> string;
+        get-cs-pin: func() -> result<string, spi-error>;
 
         /// Manually select the peripheral
         select-chip: func() -> result<_, spi-error>;
@@ -144,16 +140,16 @@ interface bus {
         get-config: func() -> result<spi-config, spi-error>;
 
         /// Returns the bus number
-        get-bus: func() -> u8;
+        get-bus: func() -> result<string, spi-error>;
 
         /// Write to the bus
-        write: func(write: list<u8>) -> result;
+        write: func(write: list<u8>) -> result<_, spi-error>;
 
         /// Read from the bus
-        read: func() -> result<list<u8>>;
+        read: func() -> result<list<u8>, spi-error>;
 
         /// Write and read from the bus
-        transfer: func(write: list<u8>) -> result<list<u8>>;
+        transfer: func(write: list<u8>) -> result<list<u8>, spi-error>;
 
         /// Execute a list of operations in order
         /// The return type will have the same structure as the operations, consisting out of a list of write/read results or SPI errors

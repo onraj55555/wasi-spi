@@ -11,7 +11,7 @@ interface general {
         /// Policy does not allow this full-bus/bus + CS pin to be used at all
         not-allowed,
 
-        /// Read before write on controller, write before read on peripheral
+        /// Operation is not supported
         operation-not-supported,
 
         /// The peripheral receive buffer was overrun (embedded-hal)
@@ -32,8 +32,8 @@ interface general {
         /// The peripheral itself is not enabled so cannot use 
         not-enabled,
 	
-	/// Gets returned when a function on an invalidated resource gets called 
-	resource-invalidated,
+        /// Gets returned when a function on an invalidated resource gets called 
+        resource-invalidated,
 
         /// Unspecified error, error message might give hints but not guaranteed
         other(string)
@@ -58,6 +58,12 @@ interface general {
 
     /// SPI configuration
     record spi-config {
+        /// The bus label the SPI resouces is tied to
+        bus: string,
+        
+        /// In case of an SPI controller, this will contain the label is the CS pin
+        cs-pin: option<string>,
+        
         /// Frequency of the clock signal, the controller will configure a frequency lower than or equal to the value
         frequency: u64,
 
@@ -88,18 +94,10 @@ interface controller {
     /// An SPI controller is a combination of an SPI bus together with a CS pin, multiple controllers on the same bus can exist
     resource spi-controller {
         /// Constructor function to get an spi-controller resource
-        get: static func(bus: string, cs-pin: string, config: spi-config) -> result<spi-controller, spi-error>;
+        get: static func(config: spi-config) -> result<spi-controller, spi-error>;
 
         /// Returns the configuration of the SPI bus + CS pin this resource is tied to
         get-config: func() -> result<spi-config, spi-error>;
-
-        /// Returns the bus number
-        get-bus: func() -> result<string, spi-error>;
-
-        // Maybe depend on wasi:gpio and give a digital-in-pin as argument to the constructor
-
-        /// Returns the CS pin label
-        get-cs-pin: func() -> result<string, spi-error>;
 
         /// Manually select the peripheral
         select-chip: func() -> result<_, spi-error>;
@@ -134,13 +132,10 @@ interface bus {
     /// To talk to peripheral devices, their CS pins will need to be activated manually by means of for example wasi:gpio digital-out-pin resources
     resource spi-bus {
         /// Constructor function to get an spi-bus resource
-        get: static func(bus: string, config: spi-config) -> result<spi-bus, spi-error>;
+        get: static func(config: spi-config) -> result<spi-bus, spi-error>;
 
         /// Returns the configuration of the SPI bus this resource is tied to
         get-config: func() -> result<spi-config, spi-error>;
-
-        /// Returns the bus number
-        get-bus: func() -> result<string, spi-error>;
 
         /// Write to the bus
         write: func(write: list<u8>) -> result<_, spi-error>;
@@ -164,28 +159,34 @@ interface bus {
 interface peripheral {
     use general.{spi-config, spi-error};
 
-    resource spi-peripheral-read {
-        get-value: func() -> bool;
-    }
-
     /// SPI peripheral resource
     /// An SPI peripheral is a device that reacts to its CS becoming active and responds to incoming bits by sending back bits to the controller device
     resource spi-peripheral {
         /// Constructor function to be come an SPI peripheral
-        become: static func(bus: string, config: spi-config) -> result<spi-peripheral, spi-error>;
+        become: static func(config: spi-config) -> result<spi-peripheral, spi-error>;
 
-	/// Returns the configuration of the spi peripheral
+        /// Returns the configuration of the spi peripheral
         get-config: func() -> result<spi-config, spi-error>;
 
         /// Checks if the peripheral is selected, after this function returns true, the read function 
-        enabled: func() -> bool;
-
-        /// If there can be read, this function returns an spi-peripheral-read resource that has 2 functions
-        /// It provides the peripheral with the bit that was read
-        /// It needs to be passed to the write function to write a bit back, this prevents write without read
-        read: func() -> result<option<spi-peripheral-read>, spi-error>;
+        is-selected: func() -> bool;
         
-        /// The peripheral write function that demands a read to have happened first
-        write: func(read: spi-peripheral-read, bit: bool) -> result<_, spi-error>;
+        /// If selected returns true, this function will read 1 bit from the SPI bus
+        read-bit: func() -> result<bool, spi-error>;
+
+        /// If is-selected returns true, this function will read from the SPI bus
+        read-word: func() -> result<list<u8>, spi-error>;
+        
+        /// If is-selected returns true, this function will read n words from the SPI bus
+        read-n-words: func(n: u64) -> result<list<u8>, spi-error>;
+        
+        /// If is-selected returns true, this function will write 1 bit to the SPI bus
+        write-bit: func(bit: bool) -> result<_, spi-error>;
+        
+        /// If is-selected returns true, this function will write 1 word to the SPI bus, only WORDSIZE bits will be read from the input
+        write-word: func(word: list<u8>) -> result<_, spi-error>;
+        
+        /// If is-selected returns true, this function will write n words to the SPI bus, n is determined by the size of the list
+        write-n-words: func(words: list<u8>) -> result<_, spi-error>;
     }
 }

@@ -80,7 +80,7 @@ interface general {
 
     /// Operation variants that can be used to chain operations in a transaction
     variant operation {
-        read,
+        read(u64),
         write(list<u8>),
         transfer(list<u8>),
         delay(u64),
@@ -105,14 +105,23 @@ interface controller {
         /// Manually deselect the peripheral
         deselect-chip: func() -> result<_, spi-error>;
 
-        /// Write the the peripheral, automatically turning on and off the CS pin unless it is manually turned on
-        write: func(write: list<u8>) -> result<_, spi-error>;
+        /// Writes 1 word the the peripheral, automatically turning on and off the CS pin unless it is manually turned on
+        write-word: func(write: list<u8>) -> result<_, spi-error>;
+        
+        /// Writes n (determined by the amount of data supplied) words the the peripheral, automatically turning on and off the CS pin unless it is manually turned on
+        write-n-words: func(write: list<u8>) -> result<_, spi-error>;
 
-        /// Read from the peripheral, automatically turning on and off the CS pin unless it is manually turned on
-        read: func() -> result<list<u8>, spi-error>;
+        /// Reads 1 word from the peripheral, automatically turning on and off the CS pin unless it is manually turned on
+        read-word: func() -> result<list<u8>, spi-error>;
+        
+        /// Reads n words from the peripheral, automatically turning on and off the CS pin unless it is manually turned on
+        read-n-words: func(n: u64) -> result<list<u8>, spi-error>;
 
-        /// Write to and read from the peripheral, manually turning on and off the CS pin unless it is manually turned on
-        transfer: func(write: list<u8>) -> result<list<u8>, spi-error>;
+        /// Write and read 1 byte to and from the peripheral, manually turning on and off the CS pin unless it is manually turned on
+        transfer-word: func(write: list<u8>) -> result<list<u8>, spi-error>;
+        
+        /// Write len(writer) and read n bytes to and from the peripheral, manually turning on and off the CS pin unless it is manually turned on
+        transfer-words: func(write: list<u8>, n: u64) -> result<list<u8>, spi-error>;
 
         /// Execute the list of operations in order, automatically turning on the CS pin on start and turning it off on end unless it is manually turned on
         /// The return type will have the same structure as the operations, consisting out of a list of write/read results or SPI errors
@@ -132,21 +141,30 @@ interface bus {
     /// To talk to peripheral devices, their CS pins will need to be activated manually by means of for example wasi:gpio digital-out-pin resources
     resource spi-bus {
         /// Constructor function to get an spi-bus resource
-        get: static func(config: spi-config) -> result<spi-bus, spi-error>;
+        get: static func(config: spi-config) -> result<spi-controller, spi-error>;
 
         /// Returns the configuration of the SPI bus this resource is tied to
         get-config: func() -> result<spi-config, spi-error>;
 
-        /// Write to the bus
-        write: func(write: list<u8>) -> result<_, spi-error>;
+        /// Writes 1 word the the bus
+        write-word: func(write: list<u8>) -> result<_, spi-error>;
+    
+        /// Writes n (determined by the amount of data supplied) words the the bus
+        write-n-words: func(write: list<u8>) -> result<_, spi-error>;
 
-        /// Read from the bus
-        read: func() -> result<list<u8>, spi-error>;
+        /// Reads 1 word from the bus
+        read-word: func() -> result<list<u8>, spi-error>;
+    
+        /// Reads n words from the bus
+        read-n-words: func(n: u64) -> result<list<u8>, spi-error>;
 
-        /// Write and read from the bus
-        transfer: func(write: list<u8>) -> result<list<u8>, spi-error>;
+        /// Write and read 1 byte to and from the bus
+        transfer-word: func(write: list<u8>) -> result<list<u8>, spi-error>;
+    
+        /// Write len(writer) and read n bytes to and from the bus
+        transfer-words: func(write: list<u8>, n: u64) -> result<list<u8>, spi-error>;
 
-        /// Execute a list of operations in order
+        /// Execute the list of operations in order
         /// The return type will have the same structure as the operations, consisting out of a list of write/read results or SPI errors
         /// The write/read results will respectively be the unit type (_) or a list of u8 integers representing the response of the peripheral
         /// Example: transaction: write, read, write, read

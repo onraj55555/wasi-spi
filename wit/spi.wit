@@ -82,7 +82,7 @@ interface general {
     variant operation {
         read(u64),
         write(list<u8>),
-        transfer(list<u8>),
+        transfer(list<u8>, n),
         delay(u64),
     }
 }
@@ -120,8 +120,8 @@ interface controller {
         /// Write and read 1 byte to and from the peripheral, manually turning on and off the CS pin unless it is manually turned on
         transfer-word: func(write: list<u8>) -> result<list<u8>, spi-error>;
         
-        /// Write len(writer) and read n bytes to and from the peripheral, manually turning on and off the CS pin unless it is manually turned on
-        transfer-words: func(write: list<u8>, n: u64) -> result<list<u8>, spi-error>;
+        /// Writes and reads n bytes to and from the peripheral, manually turning on and off the CS pin unless it is manually turned on
+        transfer-n-words: func(write: list<u8>) -> result<list<u8>, spi-error>;
 
         /// Execute the list of operations in order, automatically turning on the CS pin on start and turning it off on end unless it is manually turned on
         /// The return type will have the same structure as the operations, consisting out of a list of write/read results or SPI errors
@@ -161,8 +161,8 @@ interface bus {
         /// Write and read 1 byte to and from the bus
         transfer-word: func(write: list<u8>) -> result<list<u8>, spi-error>;
     
-        /// Write len(writer) and read n bytes to and from the bus
-        transfer-words: func(write: list<u8>, n: u64) -> result<list<u8>, spi-error>;
+        /// Writes and reads n bytes to and from the peripheral1
+        transfer-n-words: func(write: list<u8>) -> result<list<u8>, spi-error>;
 
         /// Execute the list of operations in order
         /// The return type will have the same structure as the operations, consisting out of a list of write/read results or SPI errors

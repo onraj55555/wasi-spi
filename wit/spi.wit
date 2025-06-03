@@ -82,7 +82,7 @@ interface general {
     variant operation {
         read(u64),
         write(list<u8>),
-        transfer(list<u8>, n),
+        transfer(list<u8>),
         delay(u64),
     }
 }
